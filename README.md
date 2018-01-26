@@ -72,7 +72,7 @@ function Link ({ href, children, ...props }) {
       e.preventDefault()
 
       // update and trigger render
-      const navigate = store.hydrate({ location: href })()
+      store.hydrate({ location: href })()
     }}>{children}</a>
   )
 }
