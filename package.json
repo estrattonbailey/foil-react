@@ -1,0 +1,35 @@
+{
+  "name": "@foil/react",
+  "version": "0.0.1",
+  "description": "React adapter for foil.",
+  "source": "index.js",
+  "module": "dist/foil-react.es.js",
+  "main": "dist/foil-react.js",
+  "umd:main": "dist/foil-react.umd.js",
+  "scripts": {
+    "build": "microbundle build --jsx React.createElement --external all",
+    "watch": "microbundle watch --jsx React.createElement --external all",
+    "publish": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/estrattonbailey/foil-react.git"
+  },
+  "keywords": [
+    "routing",
+    "router"
+  ],
+  "author": "estrattonbailey",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/estrattonbailey/foil-react/issues"
+  },
+  "homepage": "https://github.com/estrattonbailey/foil-react#readme",
+  "devDependencies": {
+    "microbundle": "^0.4.3"
+  },
+  "dependencies": {
+    "foil": "^0.1.1",
+    "react": "^16.2.0"
+  }
+}
