@@ -29,7 +29,7 @@
     "microbundle": "^0.4.3"
   },
   "dependencies": {
-    "foil": "^0.1.1",
+    "foil": "^1.0.1",
     "react": "^16.2.0"
   }
 }
