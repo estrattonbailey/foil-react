@@ -1,5 +1,5 @@
 # @foil/react
-React adapter for [foil](https://github.com/estrattonbailey/foil). 253 bytes.
+React adapter for [foil](https://github.com/estrattonbailey/foil). 500 bytes.
 
 ## Features
 1. Build Your Own Router™
@@ -11,12 +11,15 @@ React adapter for [foil](https://github.com/estrattonbailey/foil). 253 bytes.
 npm i @foil/react --save
 ```
 
-## Usage
-You should already have created a `router` according to the [foil](https://github.com/estrattonbailey/foil) README.
+# Usage
+Create a `router` instance as outlined in the
+[foil](https://github.com/estrattonbailey/foil) README.
 
-### Tracking Location
-Next, we need something to keep track of our application's location. Really any state management or history library will do, but the examples below will use [picostate](https://github.com/estrattonbailey/picostate).
-
+## Location
+`@foil/react` does not keep track of state internally. Use your preferred state
+management library. The examples below will use
+[picostate](https://github.com/estrattonbailey/picostate) via
+[@picostate/react](https://github.com/estrattonbailey/picostate-react).
 ```javascript
 import createStore from 'picostate'
 
@@ -26,56 +29,137 @@ const store = createStore({
 ```
 
 ### Creating a Router
-Using our `store` and `router` we can create a `Router` higher-order component. To create a `Router`, define a *resolver* function and pass it to the `createRouter` export from `@foil/react`.
+`@foil/react` does not automatically render routes, you need to tell it when
+you're ready. This allows you to perform asynchronous actions like data fetching
+and route animation before rendering the new route.
+
+To create a router, pass a resolver function to the `createRouter` export of
+`@foil/react`. This resolver is passed a `render` function that will render
+whatever component is passed to it. The resolver needs to watch for state
+updates, resolve routes for new locations, and call `render` when a route is
+matched.
+
 ```javascript
-import createRouter from '@loll/react'
+import { createRouter } from '@foil/react'
 
 const Router = createRouter(render => {
   store.listen(state => {
-    app.resolve(state.location).then(({ component }) => {
-      render(component)
+    app.resolve(state.location, ({ payload, context }) => {
+      const { Component } = payload
+      payload.loadData(context).then(() => {
+        render(Component)
+      })
     })
   })
 })
 ```
-This `Router` component will bind itself to the resolver. `render` is just sugar on top of `this.setState()`. Any React component you pass to your `render()` call will be rendered.
-
-> As above, this is used to render resolved routes, *but can also be used to render loading states for asynchronous routes*.
 
 ### Mounting the App
-To initialize our app, we need to resolve the initial route and then mount the application to the DOM:
+To initialize our app, we need to resolve the initial route and then mount the
+application to the DOM:
 ```javascript
 import React from 'react'
 import { render } from 'react-dom'
-import Layout from './Layout.js' // whatever
+import { Provider } from '@picostate/react'
+import { createRouter } from '@foil/react'
+import store from './store.js' // picostate store
+import Layout from './Layout.js' // your layout or whatever
 
-router.resolve(window.location.pathname).then(({ component: Comp }) => {
-  render((
-    <Layout>
-      <Router>
-        <Comp />
-      </Router>
-    </Layout>
-  ), document.body)
+const Router = createRouter(render => {
+  store.listen(state => {
+    app.resolve(state.location, ({ payload, context }) => {
+      const { Component } = payload
+      payload.loadData(context).then(() => {
+        render(Component)
+      })
+    })
+  })
+})
+
+router.resolve(window.location.pathname, ({ payload, context }) => {
+  const { Component } = payload
+
+  payload.loadData(context).then(() => {
+    render((
+      <Provider store={store}>
+        <Layout>
+          <Router>
+            <Component />
+          </Router>
+        </Layout>
+      </Provider>
+    ), document.body)
+  })
 })
 ```
-Subsequent updates to `store.state.location` will be handled via the *resolver* we passed to `createRouter`.
 
 ### Links
-To navigate about the app, we'll also want to creat re-usable `Link` components that mutate state:
+`@foil/react` also provides an adapter to create links using your state
+management library of choice. Ensure your component is passed an
+`activeLocation` prop and `@foil/react` will use it internally to determine if
+the link is currently active or not.
 ```javascript
-import store from './store.js' // picostate store
+import { createLink } from '@foil/react'
+import { connect } from '@picostate/react'
 
-function Link ({ href, children, ...props }) {
+function handleClick ({ href, hydrate }) {
+  hydrate({ location: props.href })()
+}
+
+const Link = createLink(handleClick)
+
+export default connect(state => ({
+  activeLocation: state.location
+})(Link)
+```
+Then, use it like normal:
+```javascript
+function Nav () {
   return (
-    <a href={href} onClick={e => {
-      e.preventDefault()
-
-      // update and trigger render
-      store.hydrate({ location: href })()
-    }}>{children}</a>
+    <ul>
+      <li><Link href='/' /></li>
+    </ul>
   )
 }
 ```
 
-MIT
+## Server Side Rendering
+On the server, the API doesn't really change. However, since we aren't dealing
+with navigation events, you don't need to `createRouter`.
+```javascript
+const server = require('express')()
+const app = require('./app.js')
+
+server.get('*', (req, res) => {
+  app.resolve(req.originalUrl, ({ payload, context, redirect }) => {
+    if (redirect.to) {
+      res.redirect(redirect.to)
+    }
+
+    const { Component } = payload
+
+    payload.loadData(context).then(() => {
+      res.send(`<!doctype html>
+        <html>
+          <head>
+          </head>
+          <body>
+            ${renderToString(
+              <Provider store={store}>
+                <Layout>
+                  <Component />
+                </Layout>
+              </Provider>
+            )}
+          </body>
+        </html>
+      `)
+    })
+  })
+})
+
+server.listen(8080)
+```
+
+## License
+MIT License © [Eric Bailey](https://estrattonbailey.com)

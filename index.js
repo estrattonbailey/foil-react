@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function createRouter (resolver) {
+export function createRouter (resolver) {
   return class Router extends React.Component {
     constructor (props) {
       super (props)
@@ -17,5 +17,31 @@ export default function createRouter (resolver) {
 
       return typeof Comp === 'function' ? <Comp /> : Comp
     }
+  }
+}
+
+export function createLink (handler) {
+  return function Link (props) {
+    const { href, children, className, activeLocation } = props
+
+    const cx = ((className || '') + (
+      activeLocation === href ? ' active' : ''
+    )).replace(/^\s|\s\s/g, '')
+
+    return (
+      <a href={href} className={cx} onClick={e => {
+        if (
+          e.ctrlKey ||
+          e.metaKey ||
+          e.altKey ||
+          e.shiftKey ||
+          e.defaultPrevented
+        ) return
+
+        e.preventDefault()
+
+        handler(props)
+      }}>{children}</a>
+    )
   }
 }
