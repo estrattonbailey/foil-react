@@ -17,14 +17,16 @@ export class Router extends React.Component {
     store.listen(({ location }) => {
       // what about a no-match?
       this.router.resolve(location, props => {
-        if (this.location === props.context.location) return
-        this.location = props.context.location
+        const { context } = props
+
+        if (this.location === context.location) return
+        this.location = context.location
 
         this.resolve(props, Child => {
           store.hydrate({
-            context: props.context,
+            context,
           })
-          window.history.pushState({}, '', props.context.location)
+          window.history.pushState({}, '', this.location)
           this.setState({ Child })
         })
       })
