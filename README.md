@@ -1,5 +1,5 @@
 # @foil/react
-React adapter for [foil](https://github.com/estrattonbailey/foil). 500 bytes.
+React adapter for [foil](https://github.com/estrattonbailey/foil). 700 bytes.
 
 ## Features
 1. Build Your Own Router™

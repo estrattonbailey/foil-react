@@ -7,8 +7,8 @@
   "main": "dist/foil-react.js",
   "umd:main": "dist/foil-react.umd.js",
   "scripts": {
-    "build": "microbundle build --jsx React.createElement --external all",
-    "watch": "microbundle watch --jsx React.createElement --external all",
+    "build": "microbundle build --jsx React.createElement",
+    "watch": "microbundle watch --jsx React.createElement --compress false",
     "publish": "npm publish --access public"
   },
   "repository": {
@@ -28,8 +28,14 @@
   "devDependencies": {
     "microbundle": "^0.4.3"
   },
-  "dependencies": {
+  "peerDependencies": {
     "foil": "^1.0.1",
+    "prop-types": "^15.6.0",
+    "react": "^16.2.0"
+  },
+  "dependencies": {
+    "picostate": "^1.0.1",
+    "prop-types": "^15.6.0",
     "react": "^16.2.0"
   }
 }
