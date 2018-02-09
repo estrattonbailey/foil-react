@@ -5,17 +5,21 @@ export class Router extends React.Component {
   constructor (props) {
     super (props)
 
+    this.location = props.context.location
     this.router = props.router
     this.resolve = props.resolve
 
     store.hydrate({
       context: props.context,
-      location: props.context.location
+      location: this.location
     })
 
     store.listen(({ location }) => {
       // what about a no-match?
       this.router.resolve(location, props => {
+        if (this.location === props.context.location) return
+        this.location = props.context.location
+
         this.resolve(props, Child => {
           store.hydrate({
             context: props.context,
