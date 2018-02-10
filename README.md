@@ -1,165 +1,149 @@
 # @foil/react
-React adapter for [foil](https://github.com/estrattonbailey/foil). 700 bytes.
+React adapter for [foil](https://github.com/estrattonbailey/foil). 800 bytes.
 
-## Features
-1. Build Your Own Router™
-2. Makes asynchronous routing easy
-3. Code splitting?
+## Features & Goals
+1. Flexible
+2. Async
+3. Tiny
 
 ## Install
 ```bash
-npm i @foil/react --save
+npm i foil @foil/react --save
 ```
 
 # Usage
-Create a `router` instance as outlined in the
-[foil](https://github.com/estrattonbailey/foil) README.
+`foil` is somewhat unique in that *when* and *what* it renders is up to
+the user. The same applies to `@foil/react`.
 
-## Location
-`@foil/react` does not keep track of state internally. Use your preferred state
-management library. The examples below will use
-[picostate](https://github.com/estrattonbailey/picostate) via
-[@picostate/react](https://github.com/estrattonbailey/picostate-react).
-```javascript
-import createStore from 'picostate'
+Instead of immediately rendering navigation events, `@foil/react` calls a user
+defined `resolve` function with the matched route and a `rerender` callback that
+accepts a React component. Users can then fetch data, load components, or perform
+transition animations before calling `rerender` when ready.
 
-const store = createStore({
-  location: window.location.pathname // or wherever your app hydrates from
-})
-```
+## Mounting the Router
+On the client, the `Router` component requires the following items:
+- `router` - a `foil` router instance
+- `context` - an initial context object, usually obtained by resolving the
+  starting location using the `foil` router instance
+- `resolve` - user defined function, called when a route is matched
 
-### Creating a Router
-`@foil/react` does not automatically render routes, you need to tell it when
-you're ready. This allows you to perform asynchronous actions like data fetching
-and route animation before rendering the new route.
-
-To create a router, pass a resolver function to the `createRouter` export of
-`@foil/react`. This resolver is passed a `render` function that will render
-whatever component is passed to it. The resolver needs to watch for state
-updates, resolve routes for new locations, and call `render` when a route is
-matched.
-
-```javascript
-import { createRouter } from '@foil/react'
-
-const Router = createRouter(render => {
-  store.listen(state => {
-    app.resolve(state.location, ({ payload, context }) => {
-      const { Component } = payload
-      payload.loadData(context).then(() => {
-        render(Component)
-      })
-    })
-  })
-})
-```
-
-### Mounting the App
-To initialize our app, we need to resolve the initial route and then mount the
-application to the DOM:
 ```javascript
 import React from 'react'
 import { render } from 'react-dom'
-import { Provider } from '@picostate/react'
-import { createRouter } from '@foil/react'
-import store from './store.js' // picostate store
-import Layout from './Layout.js' // your layout or whatever
+import { router, route } from 'foil'
+import { Router } from '@foil/react'
 
-const Router = createRouter(render => {
-  store.listen(state => {
-    app.resolve(state.location, ({ payload, context }) => {
-      const { Component } = payload
-      payload.loadData(context).then(() => {
-        render(Component)
-      })
-    })
+const app = router(
+  route({
+    path: '/',
+    payload: {
+      Component: () => <h1>Home</h1>
+    }
+  }),
+  route({
+    path: '*',
+    payload: {
+      Component: () => <h1>404</h1>
+    }
   })
-})
+)
 
-router.resolve(window.location.pathname, ({ payload, context }) => {
+app.resolve(window.location.pathname, ({ payload, context }) => {
   const { Component } = payload
 
-  payload.loadData(context).then(() => {
-    render((
-      <Provider store={store}>
-        <Layout>
-          <Router>
-            <Component />
-          </Router>
-        </Layout>
-      </Provider>
-    ), document.body)
-  })
+  render((
+    <Router
+      router={app}
+      context={context}
+      resolve={({ payload, context }, rerender) => {
+        const { Component } = payload
+        rerender(Component)
+      }}>
+      <Component />
+    </Router>
+  ), document.body)
 })
 ```
 
-### Links
-`@foil/react` also provides an adapter to create links using your state
-management library of choice. Ensure your component is passed an
-`activeLocation` prop and `@foil/react` will use it internally to determine if
-the link is currently active or not.
+## Navigating
+`@foil/react` includes a `Link` component to allow for easy naviation throughout
+your app.
 ```javascript
-import { createLink } from '@foil/react'
-import { connect } from '@picostate/react'
+import { Link } from '@foil/react'
 
-function handleClick ({ href, hydrate }) {
-  hydrate({ location: props.href })()
-}
-
-const Link = createLink(handleClick)
-
-export default connect(state => ({
-  activeLocation: state.location
-})(Link)
-```
-Then, use it like normal:
-```javascript
-function Nav () {
-  return (
+export default props => (
+  <nav>
     <ul>
-      <li><Link href='/' /></li>
+      <li><Link href='/'>Home</Link></li>
     </ul>
-  )
-}
+  </nav>
+)
 ```
 
-## Server Side Rendering
-On the server, the API doesn't really change. However, since we aren't dealing
-with navigation events, you don't need to `createRouter`.
+## Accessing Router Internals
+For cases where you need to reference router properties, you can use the
+`withRouter` higher order component. It provides its child with the following
+properties on the `router` prop:
+- `params` - `object` - any matched parameters from the route path
+- `location` - `string` - the full matched location
+- `push` - `function` - navigate to new location i.e. for redirects
+
 ```javascript
-const server = require('express')()
-const app = require('./app.js')
+import { withRouter } from '@foil/react'
+
+export default withRouter(props => (
+  <button onClick={e => {
+    props.router.push('/')
+  }>Go to Home</button>
+))
+```
+In other cases where a higher order component is cumbersome, you can also use
+the `history` manager directly.
+```javascript
+import { history } from '@foil/react'
+
+export default props => (
+  <button onClick={e => {
+    history.push('/')
+  }>Go to Home</button>
+)
+```
+
+# Server Side Rendering
+On the server, usage is essentially the same as on the client. However, since we
+don't need to resolve route changes, the `resolver` prop on `Router` is not
+required.
+
+```javascript
+import express from 'express'
+import React from 'react'
+import { renderToString } from 'react-dom/server'
+import router from './router.js' // foil router
 
 server.get('*', (req, res) => {
-  app.resolve(req.originalUrl, ({ payload, context, redirect }) => {
-    if (redirect.to) {
+  app.resolve(req.originalUrl, ({ payload, context, redirect }) =>  {
+    if (redirect) {
       res.redirect(redirect.to)
     }
 
     const { Component } = payload
 
-    payload.loadData(context).then(() => {
-      res.send(`<!doctype html>
-        <html>
-          <head>
-          </head>
-          <body>
-            ${renderToString(
-              <Provider store={store}>
-                <Layout>
-                  <Component />
-                </Layout>
-              </Provider>
-            )}
-          </body>
-        </html>
-      `)
-    })
+    res.send(`<!doctype html>
+      <html>
+        <head></head>
+        <body>${renderToString(
+          <Router router={router} context={context}>
+            <Component />
+          </Router>
+        )}</body>
+      </html>
+    `)
   })
 })
-
-server.listen(8080)
 ```
+
+# Recipes
+For sketches of data-loading, redirects, etc, refer to the [`foil`](https://github.com/estrattonbailey/foil) README.
 
 ## License
 MIT License © [Eric Bailey](https://estrattonbailey.com)
