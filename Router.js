@@ -20,13 +20,20 @@ export class Router extends React.Component {
         const { context } = props
 
         if (this.location === context.location) return
+
         this.location = context.location
 
         this.resolve(props, Child => {
           store.hydrate({
             context,
           })
-          window.history.pushState({}, '', this.location)
+
+          if (this.isPopstate) {
+            this.isPopstate = false
+          } else {
+            window.history.pushState({}, '', context.location)
+          }
+
           this.setState({ Child })
         })
       })
@@ -38,11 +45,13 @@ export class Router extends React.Component {
   }
 
   componentDidMount () {
-    window.onpopstate = e => {
+    window.addEventListener('popstate', e => {
+      if (!e.target.window) return
+      this.isPopstate = true
       store.hydrate({
         location: e.target.location.href.replace(e.target.location.origin, '')
       })()
-    }
+    })
   }
 
   render () {

@@ -34,8 +34,7 @@
     "react": "^16.2.0"
   },
   "dependencies": {
-    "picostate": "^1.0.1",
-    "prop-types": "^15.6.0",
-    "react": "^16.2.0"
+    "picostate": "^1.1.2",
+    "prop-types": "^15.6.0"
   }
 }
