@@ -7,7 +7,7 @@
   "main": "dist/foil-react.js",
   "umd:main": "dist/foil-react.umd.js",
   "scripts": {
-    "build": "microbundle build --jsx React.createElement",
+    "build": "babel Link--pre.js --out-file Link.js && microbundle build --jsx React.createElement",
     "watch": "microbundle watch --jsx React.createElement --compress false",
     "publish": "npm publish --access public"
   },
@@ -26,7 +26,10 @@
   },
   "homepage": "https://github.com/estrattonbailey/foil-react#readme",
   "devDependencies": {
-    "microbundle": "^0.4.3"
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-react": "^6.24.1",
+    "microbundle": "^0.4.4"
   },
   "peerDependencies": {
     "foil": "^1.0.1",
