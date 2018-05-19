@@ -37,7 +37,7 @@
     "react": "^16.2.0"
   },
   "dependencies": {
-    "foil": "^1.1.0",
+    "foil": "^1.1.1",
     "picostate": "^1.3.0",
     "prop-types": "^15.6.0"
   }
