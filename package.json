@@ -7,7 +7,7 @@
   "main": "dist/foil-react.js",
   "umd:main": "dist/foil-react.umd.js",
   "scripts": {
-    "build": "babel Link--pre.js --out-file Link.js && microbundle build --jsx React.createElement",
+    "build": "microbundle build --jsx React.createElement",
     "watch": "microbundle watch --jsx React.createElement --compress false",
     "publish": "npm publish --access public"
   },
@@ -39,6 +39,8 @@
   "dependencies": {
     "foil": "^1.2.1",
     "picostate": "^1.3.0",
-    "prop-types": "^15.6.0"
+    "prop-types": "^15.6.0",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2"
   }
 }
