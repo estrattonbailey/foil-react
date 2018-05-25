@@ -4,11 +4,11 @@ import { pick } from './util.js'
 
 export function Link (props) {
   const { picked, rest } = pick(props, [
-    'children', 'href', 'className', 'activeLocation'
+    'children', 'href', 'className'
   ])
 
   const cx = ((picked.className || '') + (
-    picked.activeLocation === picked.href ? ' active' : ''
+    store.state.location === picked.href ? ' active' : ''
   )).replace(/^\s|\s\s/g, '')
 
   return (
@@ -24,7 +24,7 @@ export function Link (props) {
       e.preventDefault()
 
       store.hydrate({
-        location: picked.href.replace(window.location.origin, '')
+        location: picked.href
       })()
     }} {...rest}>{picked.children}</a>
   )
