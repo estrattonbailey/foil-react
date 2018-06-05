@@ -5,7 +5,7 @@ export class Router extends React.Component {
   constructor (props) {
     super (props)
 
-    this.location = props.context.location
+    this.location = props.context.state.location
     this.router = props.router
     this.resolve = props.resolve
 
@@ -15,23 +15,21 @@ export class Router extends React.Component {
     })
 
     store.listen(({ location }) => {
-      // what about a no-match?
       this.router.resolve(location, props => {
         const { context } = props
+        const { location } = context.state
 
-        if (this.location === context.location) return
+        if (this.location === location) return
 
-        this.location = context.location
+        this.location = location
 
         this.resolve(props, Child => {
-          store.hydrate({
-            context,
-          })
+          store.hydrate({ context })
 
           if (this.isPopstate) {
             this.isPopstate = false
           } else {
-            window.history.pushState({}, '', context.location)
+            window.history.pushState({}, '', location)
           }
 
           this.setState({ Child })
@@ -55,14 +53,13 @@ export class Router extends React.Component {
   }
 
   render () {
-    const context = store.state.context
     const { Child } = this.state
 
     return typeof Child === 'function' ? (
-      <Child router={context} />
+      <Child router={store.state.context} />
     ) : (
       React.cloneElement(Child, Object.assign({}, Child.props, {
-        router: context
+        router: store.state.context
       }))
     )
   }

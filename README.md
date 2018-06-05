@@ -23,7 +23,7 @@ transition animations before calling `rerender` when ready.
 ## Mounting the Router
 On the client, the `Router` component requires the following items:
 - `router` - a `foil` router instance
-- `context` - an initial context object, usually obtained by resolving the
+- `context` - an initial context object, obtained by resolving the
   starting location using the `foil` router instance
 - `resolve` - user defined function, called when a route is matched
 
@@ -33,7 +33,7 @@ import { render } from 'react-dom'
 import { router, route } from 'foil'
 import { Router } from '@foil/react'
 
-const app = router(
+const app = router([
   route({
     path: '/',
     payload: {
@@ -46,7 +46,7 @@ const app = router(
       Component: () => <h1>404</h1>
     }
   })
-)
+])
 
 app.resolve(window.location.pathname, ({ payload, context }) => {
   const { Component } = payload
@@ -81,24 +81,18 @@ export default props => (
 ```
 
 ## Accessing Router Internals
-For cases where you need to reference router properties, you can use the
-`withRouter` higher order component. It provides its child with the following
-properties on the `router` prop:
-- `params` - `object` - any matched parameters from the route path
-- `location` - `string` - the full matched location
-- `push` - `function` - navigate to new location i.e. for redirects
+For router state, use the `withRouter` higher order component. It provides its
+child with the full `context` object from `foil` on the `router` prop:
 
 ```javascript
 import { withRouter } from '@foil/react'
 
 export default withRouter(props => (
-  <button onClick={e => {
-    props.router.push('/')
-  }>Go to Home</button>
+  <h1>Router location: {props.router.state.location}</h1>
 ))
 ```
-In other cases where a higher order component is cumbersome, you can also use
-the `history` manager directly.
+
+To change the location manually, use the `history` manager directly.
 ```javascript
 import { history } from '@foil/react'
 
@@ -118,9 +112,13 @@ required.
 import express from 'express'
 import React from 'react'
 import { renderToString } from 'react-dom/server'
-import router from './router.js' // foil router
+import { router } from 'foil'
+import { Router } from '@foil/react'
+import routes from './routes.js' // array of foil routes
 
 server.get('*', (req, res) => {
+  const app = router(routes, {})
+
   app.resolve(req.originalUrl, ({ payload, context, redirect }) =>  {
     if (redirect) {
       res.redirect(redirect.to)
