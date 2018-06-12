@@ -81,18 +81,18 @@ export default props => (
 ```
 
 ## Accessing Router Internals
-For router state, use the `withRouter` higher order component. It provides its
-child with the full `context` object from `foil` on the `router` prop:
+For `history` state, use the `withHistory` higher order component. It provides its
+child with the full `state` object from `foil` on the `history` prop:
 
 ```javascript
-import { withRouter } from '@foil/react'
+import { withHistory } from '@foil/react'
 
-export default withRouter(props => (
-  <h1>Router location: {props.router.state.location}</h1>
+export default withHistory(props => (
+  <h1>Router location: {props.history.state.location}</h1>
 ))
 ```
 
-To change the location manually, use the `history` manager directly.
+You can also use the `history` manager directly.
 ```javascript
 import { history } from '@foil/react'
 
