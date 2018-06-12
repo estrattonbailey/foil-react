@@ -5,7 +5,7 @@ export class Router extends React.Component {
   constructor (props) {
     super (props)
 
-    this.location = props.context.state.location
+    this.pathname = props.context.state.pathname
     this.router = props.router
     this.resolve = props.resolve
 
@@ -14,19 +14,18 @@ export class Router extends React.Component {
     }
 
     store.hydrate({
-      __location: this.location,
+      __location: this.pathname,
       context: props.context
     })
 
     store.listen(({ __location }) => {
       this.router.resolve(__location, props => {
         const { context } = props
-        const { location } = context.state
+        const { pathname } = context.state
 
-        // should compare pathnames
-        if (this.location === location) return
+        if (this.pathname === pathname) return
 
-        this.location = location
+        this.pathname = pathname
 
         this.resolve(props, Child => {
           store.hydrate({ context })

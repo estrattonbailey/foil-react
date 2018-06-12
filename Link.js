@@ -1,29 +1,36 @@
 import React from 'react'
-import { history } from './history.js'
+import { withHistory } from './withHistory.js'
 import { pick } from './util.js'
 
-export function Link (props) {
-  const { picked, rest } = pick(props, [
-    'children', 'href', 'className'
-  ])
+export const Link = withHistory(
+  function Link (props) {
+    const { picked, rest } = pick(props, [
+      'children', 'href', 'className', 'history'
+    ])
 
-  const cx = ((picked.className || '') + (
-    history.state.location === picked.href ? ' active' : ''
-  )).replace(/^\s|\s\s/g, '')
+    const { location, pathname } = picked.history.state
 
-  return (
-    <a href={picked.href} className={cx} onClick={e => {
-      if (
-        e.ctrlKey ||
-        e.metaKey ||
-        e.altKey ||
-        e.shiftKey ||
-        e.defaultPrevented
-      ) return
+    const cx = ((picked.className || '') + (
+      (
+        location === picked.href ||
+        pathname === picked.href
+      ) ? ' active' : ''
+    )).replace(/^\s|\s\s/g, '')
 
-      e.preventDefault()
+    return (
+      <a href={picked.href} className={cx} onClick={e => {
+        if (
+          e.ctrlKey ||
+          e.metaKey ||
+          e.altKey ||
+          e.shiftKey ||
+          e.defaultPrevented
+        ) return
 
-      history.push(picked.href)
-    }} {...rest}>{picked.children}</a>
-  )
-}
+        e.preventDefault()
+
+        picked.history.push(picked.href)
+      }} {...rest}>{picked.children}</a>
+    )
+  }
+)

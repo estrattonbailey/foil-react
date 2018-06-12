@@ -8,7 +8,7 @@ export const history = {
   },
   push (loc, popstate) {
     let location = typeof loc === 'function' ? (
-      loc(store.state.context.state)
+      loc(this.state)
     ) : (
       loc
     )
