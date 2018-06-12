@@ -1,5 +1,5 @@
 import React from 'react'
-import { store } from './history.js'
+import { history } from './history.js'
 import { pick } from './util.js'
 
 export function Link (props) {
@@ -8,7 +8,7 @@ export function Link (props) {
   ])
 
   const cx = ((picked.className || '') + (
-    store.state.location === picked.href ? ' active' : ''
+    history.state.location === picked.href ? ' active' : ''
   )).replace(/^\s|\s\s/g, '')
 
   return (
@@ -23,9 +23,7 @@ export function Link (props) {
 
       e.preventDefault()
 
-      store.hydrate({
-        location: picked.href
-      })()
+      history.push(picked.href)
     }} {...rest}>{picked.children}</a>
   )
 }

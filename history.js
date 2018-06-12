@@ -3,9 +3,26 @@ import createStore from 'picostate'
 export const store = createStore({})
 
 export const history = {
-  push (loc) {
+  get state () {
+    return store.state.context.state
+  },
+  push (loc, popstate) {
+    let location = typeof loc === 'function' ? (
+      loc(store.state.context.state)
+    ) : (
+      loc
+    )
+
+    if (typeof location !== 'string') {
+      console.error(`@foil/react - location must be a string, received ${location}`)
+    }
+
+    location = location.replace(window.location.origin, '')
+
     store.hydrate({
-      location: loc.replace(window.location.origin, '')
-    })()
+      __location: location
+    })(() => {
+      !popstate && window.history.pushState({}, '', location)
+    })
   }
 }
