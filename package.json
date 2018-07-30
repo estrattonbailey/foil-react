@@ -1,6 +1,6 @@
 {
   "name": "@foil/react",
-  "version": "3.0.5",
+  "version": "3.1.0",
   "description": "React adapters for foil.",
   "source": "index.js",
   "module": "dist/foil-react.es.js",
