@@ -99,6 +99,7 @@ import { history } from '@foil/react'
 export default props => (
   <button onClick={e => {
     history.push('/')
+    // or history.replace('/'), skips render
   }>Go to Home</button>
 )
 ```
