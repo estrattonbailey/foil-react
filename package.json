@@ -29,7 +29,7 @@
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-react": "^6.24.1",
-    "microbundle": "^0.4.4"
+    "microbundle": "^0.11.0"
   },
   "peerDependencies": {
     "foil": "^1.0.1",
